@@ -1,0 +1,131 @@
+"""
+At the command line, only need to run once to install the package via pip:
+
+$ pip install google-generativeai
+"""
+
+from pathlib import Path
+import hashlib
+import google.generativeai as genai
+
+genai.configure(api_key="YOUR_API_KEY")
+
+# Set up the model
+generation_config = {
+  "temperature": 1,
+  "top_p": 0.95,
+  "top_k": 0,
+  "max_output_tokens": 8192,
+}
+
+safety_settings = [
+  {
+    "category": "HARM_CATEGORY_HARASSMENT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_HATE_SPEECH",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+  {
+    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+  },
+]
+
+model = genai.GenerativeModel(model_name="gemini-1.5-pro-latest",
+                              generation_config=generation_config,
+                              safety_settings=safety_settings)
+
+uploaded_files = []
+def upload_if_needed(pathname: str) -> list[str]:
+  path = Path(pathname)
+  hash_id = hashlib.sha256(path.read_bytes()).hexdigest()
+  try:
+    existing_file = genai.get_file(name=hash_id)
+    return [existing_file.uri]
+  except:
+    pass
+  uploaded_files.append(genai.upload_file(path=path, display_name=hash_id))
+  return [uploaded_files[-1].uri]
+
+def extract_pdf_pages(pathname: str) -> list[str]:
+  parts = [f"--- START OF PDF ${pathname} ---"]
+  # Add logic to read the PDF and return a list of pages here.
+  pages = []
+  for index, page in enumerate(pages):
+    parts.append(f"--- PAGE {index} ---")
+    parts.append(page)
+  return parts
+
+convo = model.start_chat(history=[
+  {
+    "role": "user",
+    "parts": extract_pdf_pages("<path>/document0.pdf")
+  },
+  {
+    "role": "user",
+    "parts": ["  conclusões de como eu tenho usado o meu tempo, criando um resumo do que você mais acessa, quantidade de uso e tipo de site; crie no final um grafico para fazer essa representação de uso"]
+  },
+  {
+    "role": "model",
+    "parts": ["## Análise do histórico de navegação e conclusões: \n\nCom base no arquivo history.csv, podemos analisar seu comportamento de navegação e tirar algumas conclusões sobre como você tem usado seu tempo online. \n\n**Sites mais acessados:**\n\n*   **LinkedIn:** É o site que você mais acessa, com um total de 477 visitas e 43 ações de digitação. Isso indica que você investe um tempo considerável em networking, busca de oportunidades de trabalho ou consumo de conteúdo profissional.\n*   **Label Studio:** Você acessou o Label Studio 744 vezes, muitas delas relacionadas a tarefas de anotação de dados. Este alto número sugere um envolvimento significativo com projetos de Machine Learning ou Data Science.\n*   **Google:** Vários serviços Google aparecem frequentemente no histórico, como Gmail (765 visitas), Google Drive (41 visitas), YouTube (39 visitas), Google AI Studio (13 visitas), Google Cloud Platform (15 visitas). Isso reflete o uso diversificado de ferramentas Google para produtividade, armazenamento, entretenimento, aprendizado e desenvolvimento na nuvem. \n*   **Notícias sobre as enchentes no RS:** Há um pico notável de acessos a sites de notícias e informações sobre as enchentes no Rio Grande do Sul, ocorridas em maio de 2024. Isso indica que você estava acompanhando de perto a situação e buscando informações atualizadas sobre o desastre.\n*   **Outros:** Sites como Twitch, Canva, DataCamp, DIO e sites governamentais também aparecem no histórico, sugerindo um interesse por streaming, design, ciência de dados, educação e assuntos cívicos. \n\n**Quantidade de uso:**\n\n*   O histórico abrange o período de 1º de maio de 2024 a 7 de maio de 2024, totalizando 7 dias.\n*   O número total de visitas a sites é de 3189.\n\n**Tipo de site:**\n\n*   **Profissional/Educacional:** A maioria dos sites acessados se enquadra nesta categoria, com destaque para LinkedIn, Label Studio, DataCamp e DIO. Isso indica um foco em desenvolvimento profissional, aprendizado e networking.\n*   **Notícias/Informação:** O pico de acessos a sites de notícias sobre as enchentes no RS mostra um interesse em se manter informado sobre eventos atuais e relevantes.\n*   **Produtividade/Armazenamento:** O uso frequente de Gmail e Google Drive revela a importância dessas ferramentas para sua organização e produtividade. \n*   **Entretenimento:** Twitch e Disney+ aparecem no histórico, indicando um interesse em streaming e conteúdo de entretenimento. \n\n**Gráfico de representação de uso:**\n\nInfelizmente, como um modelo de linguagem, não tenho a capacidade de gerar gráficos diretamente. No entanto, posso sugerir algumas opções para criar uma representação visual do seu uso da web:\n\n*   **Gráfico de pizza:** Divida o gráfico em fatias proporcionais ao número de visitas para cada categoria de site (por exemplo, Profissional/Educacional, Notícias/Informação, Produtividade/Armazenamento, Entretenimento).\n*   **Gráfico de barras:**  Compare o número de visitas para cada site individualmente, usando barras para representar a quantidade.\n*   **Nuvem de palavras:** Crie uma nuvem de palavras onde o tamanho de cada palavra representa a frequência com que o site correspondente foi acessado. \n\n**Conclusão:**\n\nSeu histórico de navegação demonstra um forte interesse em desenvolvimento profissional, aprendizado e networking, com um foco significativo em ciência de dados e projetos de Machine Learning. Você também se mantém informado sobre eventos atuais e utiliza ferramentas de produtividade online."]
+  },
+  {
+    "role": "user",
+    "parts": ["crie um breve readme para o git hub"]
+  },
+  {
+    "role": "model",
+    "parts": ["## README.md\n\n### Histórico de Navegação - Maio de 2024\n\nEste repositório contém um arquivo CSV com meu histórico de navegação do Google Chrome durante o período de 1º a 7 de maio de 2024. O arquivo inclui informações sobre cada página visitada, como data, hora, título, URL, número de visitas e tipo de transição.\n\n### Análise\n\nUma análise do histórico revela um forte interesse em desenvolvimento profissional, aprendizado e networking, com foco em ciência de dados e projetos de Machine Learning. O uso frequente de plataformas como LinkedIn, Label Studio e DataCamp demonstra esse foco. Além disso, o histórico mostra que acompanhei de perto as notícias sobre as enchentes no Rio Grande do Sul durante esse período, acessando diversos sites de notícias e informações.\n\nFerramentas de produtividade online, como Gmail e Google Drive, também são usadas com frequência, indicando sua importância para organização e produtividade. O histórico também revela um interesse por streaming e conteúdo de entretenimento, com visitas ao Twitch e Disney+.\n\n### Observações\n\n*   Este histórico de navegação é pessoal e reflete meus interesses e atividades online durante um período específico.\n*   O arquivo CSV pode ser aberto e analisado em qualquer software de planilhas ou ferramenta de análise de dados. \n*   Os dados podem ser usados para entender melhor os hábitos de navegação, identificar áreas de interesse e potencialmente otimizar o tempo gasto online.\n\n**Sinta-se à vontade para explorar os dados e tirar suas próprias conclusões!**"]
+  },
+  {
+    "role": "user",
+    "parts": ["o formado é md quero que la tbm tenha Fontes maiores palavras em negrito"]
+  },
+  {
+    "role": "model",
+    "parts": ["## README.md\n\n# Histórico de Navegação - Maio de 2024\n\nEste repositório contém um arquivo CSV (`history.csv`) com meu histórico de navegação do Google Chrome durante o período de 1º a 7 de maio de 2024. O arquivo inclui informações sobre cada página visitada, como data, hora, título, URL, número de visitas e tipo de transição.\n\n## Análise\n\nUma análise do histórico revela um **forte interesse em desenvolvimento profissional, aprendizado e networking**, com foco em **ciência de dados e projetos de Machine Learning**. O uso frequente de plataformas como **LinkedIn, Label Studio e DataCamp** demonstra esse foco.\n\nAlém disso, o histórico mostra que acompanhei de perto as **notícias sobre as enchentes no Rio Grande do Sul** durante esse período, acessando diversos sites de notícias e informações.\n\n**Ferramentas de produtividade online**, como **Gmail e Google Drive**, também são usadas com frequência, indicando sua importância para organização e produtividade. O histórico também revela um interesse por streaming e conteúdo de entretenimento, com visitas ao **Twitch e Disney+**.\n\n## Observações\n\n*   Este histórico de navegação é pessoal e reflete meus interesses e atividades online durante um período específico.\n*   O arquivo CSV pode ser aberto e analisado em qualquer software de planilhas ou ferramenta de análise de dados. \n*   Os dados podem ser usados para entender melhor os hábitos de navegação, identificar áreas de interesse e potencialmente otimizar o tempo gasto online.\n\n**Sinta-se à vontade para explorar os dados e tirar suas próprias conclusões!**"]
+  },
+  {
+    "role": "user",
+    "parts": ["mas acredito que vc tenha que me dar em forma de codigo para fazer essas alterações"]
+  },
+  {
+    "role": "model",
+    "parts": ["## Código para README.md com formatação\n\n```markdown\n# Histórico de Navegação - Maio de 2024\n\nEste repositório contém um arquivo CSV (`history.csv`) com meu histórico de navegação do Google Chrome durante o período de 1º a 7 de maio de 2024. O arquivo inclui informações sobre cada página visitada, como data, hora, título, URL, número de visitas e tipo de transição.\n\n## Análise\n\nUma análise do histórico revela um **forte interesse em desenvolvimento profissional, aprendizado e networking**, com foco em **ciência de dados e projetos de Machine Learning**. O uso frequente de plataformas como **LinkedIn, Label Studio e DataCamp** demonstra esse foco.\n\nAlém disso, o histórico mostra que acompanhei de perto as **notícias sobre as enchentes no Rio Grande do Sul** durante esse período, acessando diversos sites de notícias e informações.\n\n**Ferramentas de produtividade online**, como **Gmail e Google Drive**, também são usadas com frequência, indicando sua importância para organização e produtividade. O histórico também revela um interesse por streaming e conteúdo de entretenimento, com visitas ao **Twitch e Disney+**.\n\n## Observações\n\n*   Este histórico de navegação é pessoal e reflete meus interesses e atividades online durante um período específico.\n*   O arquivo CSV pode ser aberto e analisado em qualquer software de planilhas ou ferramenta de análise de dados. \n*   Os dados podem ser usados para entender melhor os hábitos de navegação, identificar áreas de interesse e potencialmente otimizar o tempo gasto online.\n\n**Sinta-se à vontade para explorar os dados e tirar suas próprias conclusões!**\n```\n\n**Explicação:**\n\n*   `#` cria um título de nível 1 (o maior)\n*   `##` cria um título de nível 2 \n*   `` ` `` (acentos graves) envolvem o nome do arquivo para formatá-lo como código\n*   `**` (asteriscos duplos) envolvem o texto para deixá-lo em negrito \n*   `*` (asterisco) cria uma lista com marcadores \n\n**Como usar:**\n\n1.  Copie o código acima.\n2.  Crie um novo arquivo chamado `README.md` na raiz do seu repositório GitHub.\n3.  Cole o código no arquivo `README.md`.\n4.  Salve o arquivo e faça commit das alterações no seu repositório. \n\nAgora, seu repositório terá um README com formatação e informações sobre seu histórico de navegação!"]
+  },
+  {
+    "role": "user",
+    "parts": ["agora a conclusão que vc teve vamos colocar isso em py para fazer essas analises e representações de graficos"]
+  },
+  {
+    "role": "model",
+    "parts": ["## Análise de histórico de navegação em Python\n\nAqui está um script Python básico para analisar seu arquivo `history.csv` e gerar representações gráficas dos seus hábitos de navegação:\n\n```python\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Carregue o arquivo CSV usando pandas\ndf = pd.read_csv(\"history.csv\")\n\n# Contagem de visitas por site\nsite_counts = df[\"url\"].value_counts()\n\n# Crie um gráfico de pizza\nplt.pie(site_counts.values, labels=site_counts.index, autopct=\"%1.1f%%\")\nplt.title(\"Porcentagem de Visitas por Site\")\nplt.show()\n\n# Crie um gráfico de barras\nplt.bar(site_counts.index, site_counts.values)\nplt.xlabel(\"Site\")\nplt.ylabel(\"Número de Visitas\")\nplt.title(\"Número de Visitas por Site\")\nplt.xticks(rotation=45, ha=\"right\")\nplt.tight_layout()\nplt.show()\n```\n\n**Explicação:**\n\n1.  **Importação de bibliotecas:** Importamos as bibliotecas `pandas` para manipulação de dados e `matplotlib.pyplot` para visualização.\n2.  **Carregamento dos dados:** Usamos `pd.read_csv` para ler o arquivo `history.csv` e armazená-lo em um DataFrame pandas.\n3.  **Contagem de visitas:** Utilizamos `value_counts` para contar o número de ocorrências de cada URL no DataFrame, obtendo a frequência de visitas por site.\n4.  **Gráfico de pizza:** Criamos um gráfico de pizza com `plt.pie`, usando os valores e índices da Series `site_counts`. `autopct` formata os rótulos com a porcentagem de cada fatia.\n5.  **Gráfico de barras:** Criamos um gráfico de barras com `plt.bar`, usando os índices e valores de `site_counts`. Ajustamos os rótulos dos eixos e rotacionamos os rótulos do eixo x para melhor legibilidade.\n\n**Requisitos:**\n\n*   Você precisa ter as bibliotecas `pandas` e `matplotlib` instaladas. Pode instalá-las usando `pip install pandas matplotlib`. \n\n**Modificações possíveis:**\n\n*   **Agrupar sites por categoria:** Você pode criar uma nova coluna no DataFrame para categorizar os sites (por exemplo, \"Profissional\", \"Notícias\", \"Entretenimento\") e então usar essa coluna para agrupar os dados nos gráficos.\n*   **Filtrar por data:** Utilize as colunas \"date\" e \"time\" para filtrar o DataFrame por um período específico antes de gerar os gráficos. \n*   **Explorar outros tipos de gráficos:** Matplotlib oferece uma variedade de outros tipos de gráficos que você pode usar para visualizar seus dados, como gráficos de linha, histogramas, etc.\n\n**Com este script, você pode começar a explorar seu histórico de navegação e visualizar como tem usado seu tempo online!**"]
+  },
+  {
+    "role": "user",
+    "parts": ["crie as modificações possiveis"]
+  },
+  {
+    "role": "model",
+    "parts": ["## Modificações Possíveis para o Script Python\n\n### 1. Agrupar Sites por Categoria\n\n```python\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Carregue o arquivo CSV usando pandas\ndf = pd.read_csv(\"history.csv\")\n\n# Função para categorizar sites\ndef categorize_site(url):\n    if \"linkedin.com\" in url:\n        return \"Profissional\"\n    elif \"labelstudio\" in url:\n        return \"Machine Learning\"\n    elif \"google.com\" in url:\n        return \"Google Services\"\n    elif \"alura.com.br\" in url:\n        return \"Educação\"\n    elif \"twitch.tv\" in url:\n        return \"Entretenimento\"\n    else:\n        return \"Outros\"\n\n# Crie uma nova coluna com a categoria de cada site\ndf[\"categoria\"] = df[\"url\"].apply(categorize_site)\n\n# Contagem de visitas por categoria\ncategory_counts = df[\"categoria\"].value_counts()\n\n# Crie um gráfico de pizza por categoria\nplt.pie(category_counts.values, labels=category_counts.index, autopct=\"%1.1f%%\")\nplt.title(\"Porcentagem de Visitas por Categoria\")\nplt.show()\n\n# Crie um gráfico de barras por categoria\nplt.bar(category_counts.index, category_counts.values)\nplt.xlabel(\"Categoria\")\nplt.ylabel(\"Número de Visitas\")\nplt.title(\"Número de Visitas por Categoria\")\nplt.xticks(rotation=45, ha=\"right\")\nplt.tight_layout()\nplt.show()\n```\n\n**Explicação:**\n\n1.  **Função de categorização:** Definimos uma função `categorize_site` que recebe a URL como argumento e retorna a categoria do site com base em palavras-chave na URL. \n2.  **Nova coluna:** Aplicamos a função `categorize_site` a cada URL na coluna \"url\" usando `apply` e armazenamos os resultados em uma nova coluna chamada \"categoria\".\n3.  **Contagem por categoria:** Contamos o número de visitas por categoria usando `value_counts` na coluna \"categoria\".\n4.  **Gráficos:** Geramos os gráficos de pizza e barras como antes, mas agora usando as contagens por categoria.\n\n### 2. Filtrar por Data\n\n```python\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Carregue o arquivo CSV usando pandas\ndf = pd.read_csv(\"history.csv\")\n\n# Converta as colunas de data e hora para datetime\ndf[\"datetime\"] = pd.to_datetime(df[\"date\"] + \" \" + df[\"time\"])\n\n# Defina o período de interesse\nstart_date = pd.to_datetime(\"2024-05-05\")\nend_date = pd.to_datetime(\"2024-05-07\")\n\n# Filtre o DataFrame pelo período\nfiltered_df = df[(df[\"datetime\"] >= start_date) & (df[\"datetime\"] <= end_date)]\n\n# Continue com a análise e visualização usando filtered_df ...\n```\n\n**Explicação:**\n\n1.  **Conversão para datetime:** Combinamos as colunas \"date\" e \"time\" e convertemos a nova coluna \"datetime\" para o tipo datetime do pandas.\n2.  **Definição do período:** Especificamos as datas de início e fim para o período que queremos analisar. \n3.  **Filtragem:** Criamos um novo DataFrame `filtered_df` contendo apenas as linhas onde a data e hora estão dentro do período especificado.\n4.  **Análise e visualização:** Prossiga com a análise e criação de gráficos usando `filtered_df` ao invés do DataFrame original. \n\n**Com essas modificações, você pode personalizar a análise e gerar gráficos mais específicos sobre seu histórico de navegação!**"]
+  },
+  {
+    "role": "user",
+    "parts": ["nao gostei do grafico de pizza nas visitas por categoria"]
+  },
+  {
+    "role": "model",
+    "parts": ["## Alternativa ao Gráfico de Pizza: Gráfico de Barras Horizontais\n\nSe você não gostou do gráfico de pizza para as visitas por categoria, podemos substituí-lo por um gráfico de barras horizontais, que pode oferecer uma melhor visualização da comparação entre as categorias:\n\n```python\n# ... ("]
+  },
+])
+
+convo.send_message("YOUR_USER_INPUT")
+print(convo.last.text)
+for uploaded_file in uploaded_files:
+  genai.delete_file(name=uploaded_file.name)
