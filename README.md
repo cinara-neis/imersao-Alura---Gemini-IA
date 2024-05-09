@@ -28,7 +28,7 @@ O **[Gemini** é o maior e mais hábil modelo de IA do Google](https://blog.goog
 
 Isso o torna **excepcionalmente hábil** em extrair insights, proporcionando avanços de forma ainda mais veloz em muitos campos, da ciência às finanças.
 
-![Gemini](C:\Users\Cinara\Downloads\imersao-Alura---Gemini-IA-main\imersao-Alura---Gemini-IA-main\img\gemini.png)
+![Gemini](img\gemini.png)
 
 E é neste universo que nós vamos mergulhar ao longo da **Imersão Inteligência Artificial**. Você vai ver que **é possível desenvolver habilidades em IA e criar projetos do zero** com o Gemini API e o Google AI Studio.
 
